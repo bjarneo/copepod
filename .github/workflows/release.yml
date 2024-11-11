@@ -40,7 +40,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.21'
           cache: true
 
       - name: Build binary
@@ -69,6 +69,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -79,7 +84,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get version from tag
           VERSION=${GITHUB_REF#refs/tags/}
           
           # Create release notes
@@ -90,8 +94,9 @@ jobs:
           cat *.sha256 >> release_notes.md
           echo '```' >> release_notes.md
 
-          # Create release and upload assets
-          gh release create $VERSION \
+          # Create release using gh cli
+          gh release create "$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
             --title "Copepod $VERSION" \
             --notes-file release_notes.md \
             copepod-*
