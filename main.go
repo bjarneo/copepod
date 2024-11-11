@@ -48,7 +48,7 @@ const helpText = `
 Docker Deployment Tool
 
 Usage:
-  deploy [options]
+  copepod [options]
 
 Options:
   --host            Remote host to deploy to
@@ -76,9 +76,9 @@ Environment Variables:
   ENV_FILE         Environment file
 
 Examples:
-  deploy --host example.com --user deploy
-  deploy --host example.com --user deploy --container-name myapp --container-port 8080
-  deploy --env-file .env.production
+  copepod --host example.com --user deploy
+  copepod --host example.com --user deploy --container-name myapp --container-port 8080
+  copepod --env-file .env.production
 `
 
 // NewLogger creates a new logger instance
