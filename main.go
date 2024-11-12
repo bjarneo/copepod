@@ -54,14 +54,14 @@ Usage:
 Options:
   --host            Remote host to deploy to
   --user            SSH user for remote host
-  --image           Docker image name (default: app)
+  --image           Docker image name (default: copepod_app)
   --tag             Docker image tag (default: latest)
   --platform        Docker platform (default: linux/amd64)
-  --ssh-key         Path to SSH key (default: ~/.ssh/id_rsa)
-  --container-name  Name for the container (default: app)
+  --ssh-key         Path to SSH key (default: "")
+  --container-name  Name for the container (default: copepod_app)
   --container-port  Container port (default: 3000)
   --host-port       Host port (default: 3000)
-  --env-file        Environment file (default: .env.production)
+  --env-file        Environment file (default: "")
   --build-arg       Build arguments (can be specified multiple times, format: KEY=VALUE)
   --help            Show this help message
 
