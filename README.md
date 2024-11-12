@@ -4,9 +4,7 @@
 
 A simple yet powerful Go-based CLI tool for automating Docker container deployments to remote servers. This tool handles the entire deployment process including building Docker images, transferring them to remote hosts, and managing container lifecycle.
 
-
-https://github.com/user-attachments/assets/1859f611-799e-4a6a-976e-f12ae59c232e
-
+<https://github.com/user-attachments/assets/8dd2cd3b-3e1c-4168-908c-b755418e0ae0>
 
 ## Prerequisites
 
@@ -72,16 +70,17 @@ go build -o copepod
 
 | Option           | Environment Variable | Default          | Description                    |
 |-----------------|---------------------|------------------|--------------------------------|
-| --host          | COPEPOD_HOST       |                  | Remote host to deploy to       |
-| --user          | COPEPOD_USER       |                  | SSH user for remote host       |
-| --image         | COPEPOD_IMAGE      | app              | Docker image name              |
-| --tag           | COPEPOD_TAG        | latest           | Docker image tag              |
-| --platform      | COPEPOD_PLATFORM   | linux/amd64      | Docker platform               |
+| --host          | DEPLOY_HOST       |                  | Remote host to deploy to       |
+| --user          | DEPLOY_USER       |                  | SSH user for remote host       |
+| --image         | DEPLOY_IMAGE      | app              | Docker image name              |
+| --tag           | DEPLOY_TAG        | latest           | Docker image tag              |
+| --platform      | DEPLOY_PLATFORM   | linux/amd64      | Docker platform               |
 | --ssh-key       | SSH_KEY_PATH       |                  | Path to SSH key               |
 | --container-name| CONTAINER_NAME     | app              | Name for the container         |
 | --container-port| CONTAINER_PORT     | 3000             | Container port                 |
 | --host-port     | HOST_PORT         | 3000             | Host port                      |
 | --env-file      | ENV_FILE          | .env.production   | Environment file              |
+| --build-arg     | BUILD_ARGS        |                  | Build arguments (KEY=VALUE)    |
 
 ### Example Commands
 
@@ -103,6 +102,23 @@ Using environment file:
 ./copepod --env-file .env.production
 ```
 
+Using build arguments:
+
+```bash
+# Single build argument
+./copepod --host example.com --user deploy --build-arg VERSION=1.0.0
+
+# Multiple build arguments
+./copepod --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
+
+# Using environment variable
+export BUILD_ARGS="VERSION=1.0.0,ENV=prod"
+./copepod --host example.com --user deploy
+
+# Using git commit hash
+./copepod --host example.com --user deploy --build-arg GIT_HASH=$(git rev-parse HEAD)
+```
+
 ## Directory Structure
 
 Your project directory should look like this:
@@ -118,7 +134,7 @@ Your project directory should look like this:
 
 1. Validates configuration and checks prerequisites
 2. Verifies Docker installation and SSH connectivity
-3. Builds Docker image locally
+3. Builds Docker image locally with any provided build arguments
 4. Transfers image to remote host
 5. Copies environment file (if specified)
 6. Stops and removes existing container
@@ -148,6 +164,7 @@ The tool includes error handling for common scenarios:
 - Uses SSH key-based authentication
 - Supports custom SSH key paths
 - Environment variables can be passed securely via env file
+- Build arguments can be used for sensitive build-time variables
 - No sensitive information is logged
 
 ## Known Limitations

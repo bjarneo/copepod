@@ -14,16 +14,17 @@ import (
 
 // Config holds the deployment configuration
 type Config struct {
-	Host          string `json:"host"`
-	User          string `json:"user"`
-	Image         string `json:"image"`
-	Tag           string `json:"tag"`
-	Platform      string `json:"platform"`
-	SSHKey        string `json:"sshKey"`
-	ContainerName string `json:"containerName"`
-	ContainerPort string `json:"containerPort"`
-	HostPort      string `json:"hostPort"`
-	EnvFile       string `json:"envFile"`
+	Host          string            `json:"host"`
+	User          string            `json:"user"`
+	Image         string            `json:"image"`
+	Tag           string            `json:"tag"`
+	Platform      string            `json:"platform"`
+	SSHKey        string            `json:"sshKey"`
+	ContainerName string            `json:"containerName"`
+	ContainerPort string            `json:"containerPort"`
+	HostPort      string            `json:"hostPort"`
+	EnvFile       string            `json:"envFile"`
+	BuildArgs     map[string]string `json:"buildArgs"`
 }
 
 // Logger handles logging to both console and file
@@ -61,6 +62,7 @@ Options:
   --container-port  Container port (default: 3000)
   --host-port       Host port (default: 3000)
   --env-file        Environment file (default: .env.production)
+  --build-arg       Build arguments (can be specified multiple times, format: KEY=VALUE)
   --help            Show this help message
 
 Environment Variables:
@@ -74,11 +76,12 @@ Environment Variables:
   CONTAINER_PORT   Container port
   HOST_PORT        Host port
   ENV_FILE         Environment file
+  BUILD_ARGS       Build arguments (comma-separated KEY=VALUE pairs)
 
 Examples:
   copepod --host example.com --user deploy
-  copepod --host example.com --user deploy --container-name myapp --container-port 8080
-  copepod --env-file .env.production
+  copepod --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
+  copepod --env-file .env.production --build-arg GIT_HASH=$(git rev-parse HEAD)
 `
 
 // NewLogger creates a new logger instance
@@ -120,10 +123,26 @@ func (l *Logger) Close() error {
 	return l.file.Close()
 }
 
+// arrayFlags allows for multiple flag values
+type arrayFlags []string
+
+func (i *arrayFlags) String() string {
+	return strings.Join(*i, ",")
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 // LoadConfig loads configuration from command line flags and environment variables
 func LoadConfig() Config {
 	var config Config
 	var showHelp bool
+	var buildArgs arrayFlags
+
+	// Initialize BuildArgs map
+	config.BuildArgs = make(map[string]string)
 
 	// Define command line flags
 	flag.StringVar(&config.Host, "host", getEnv("DEPLOY_HOST", ""), "Remote host to deploy to")
@@ -136,6 +155,7 @@ func LoadConfig() Config {
 	flag.StringVar(&config.ContainerPort, "container-port", getEnv("CONTAINER_PORT", "3000"), "Container port")
 	flag.StringVar(&config.HostPort, "host-port", getEnv("HOST_PORT", "3000"), "Host port")
 	flag.StringVar(&config.EnvFile, "env-file", getEnv("ENV_FILE", ".env.production"), "Environment file")
+	flag.Var(&buildArgs, "build-arg", "Build argument in KEY=VALUE format (can be specified multiple times)")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 
 	// Custom usage message
@@ -150,6 +170,24 @@ func LoadConfig() Config {
 	if showHelp {
 		flag.Usage()
 		os.Exit(0)
+	}
+
+	// Process build arguments from command line
+	for _, arg := range buildArgs {
+		parts := strings.SplitN(arg, "=", 2)
+		if len(parts) == 2 {
+			config.BuildArgs[parts[0]] = parts[1]
+		}
+	}
+
+	// Process build arguments from environment variable
+	if envBuildArgs := os.Getenv("BUILD_ARGS"); envBuildArgs != "" {
+		for _, arg := range strings.Split(envBuildArgs, ",") {
+			parts := strings.SplitN(arg, "=", 2)
+			if len(parts) == 2 {
+				config.BuildArgs[parts[0]] = parts[1]
+			}
+		}
 	}
 
 	// Expand home directory in SSH key path
@@ -268,9 +306,16 @@ func Deploy(config *Config, logger *Logger) error {
 		return fmt.Errorf("Dockerfile not found in current directory")
 	}
 
-	// Build Docker image
-	buildCmd := fmt.Sprintf("docker build --platform %s -t %s:%s .",
-		config.Platform, config.Image, config.Tag)
+	// Build Docker image with build arguments
+	buildCmd := fmt.Sprintf("docker build --platform %s", config.Platform)
+
+	// Add build arguments to the command
+	for key, value := range config.BuildArgs {
+		buildCmd += fmt.Sprintf(" --build-arg %s=%s", key, value)
+	}
+
+	buildCmd += fmt.Sprintf(" -t %s:%s .", config.Image, config.Tag)
+
 	if _, err := ExecuteCommand(logger, buildCmd, "Building Docker image"); err != nil {
 		return err
 	}
