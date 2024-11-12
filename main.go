@@ -154,7 +154,7 @@ func LoadConfig() Config {
 	flag.StringVar(&config.ContainerName, "container-name", getEnv("CONTAINER_NAME", "app"), "Name for the container")
 	flag.StringVar(&config.ContainerPort, "container-port", getEnv("CONTAINER_PORT", "3000"), "Container port")
 	flag.StringVar(&config.HostPort, "host-port", getEnv("HOST_PORT", "3000"), "Host port")
-	flag.StringVar(&config.EnvFile, "env-file", getEnv("ENV_FILE", ".env.production"), "Environment file")
+	flag.StringVar(&config.EnvFile, "env-file", getEnv("ENV_FILE", ""), "Environment file")
 	flag.Var(&buildArgs, "build-arg", "Build argument in KEY=VALUE format (can be specified multiple times)")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 

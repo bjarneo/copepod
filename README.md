@@ -4,9 +4,7 @@
 
 A simple yet powerful Go-based CLI tool for automating Docker container deployments to remote servers. This tool handles the entire deployment process including building Docker images, transferring them to remote hosts, and managing container lifecycle.
 
-
-https://github.com/user-attachments/assets/4034a7b3-67d6-4e9d-88ef-70bd6d1906d7
-
+<https://github.com/user-attachments/assets/4034a7b3-67d6-4e9d-88ef-70bd6d1906d7>
 
 ## Prerequisites
 
@@ -74,14 +72,14 @@ go build -o copepod
 |-----------------|---------------------|------------------|--------------------------------|
 | --host          | DEPLOY_HOST       |                  | Remote host to deploy to       |
 | --user          | DEPLOY_USER       |                  | SSH user for remote host       |
-| --image         | DEPLOY_IMAGE      | app              | Docker image name              |
+| --image         | DEPLOY_IMAGE      | copepod_app      | Docker image name              |
 | --tag           | DEPLOY_TAG        | latest           | Docker image tag              |
 | --platform      | DEPLOY_PLATFORM   | linux/amd64      | Docker platform               |
-| --ssh-key       | SSH_KEY_PATH       |                  | Path to SSH key               |
-| --container-name| CONTAINER_NAME     | app              | Name for the container         |
-| --container-port| CONTAINER_PORT     | 3000             | Container port                 |
+| --ssh-key       | SSH_KEY_PATH      |                  | Path to SSH key               |
+| --container-name| CONTAINER_NAME    | copepod_app      | Name for the container         |
+| --container-port| CONTAINER_PORT    | 3000             | Container port                 |
 | --host-port     | HOST_PORT         | 3000             | Host port                      |
-| --env-file      | ENV_FILE          | .env.production   | Environment file              |
+| --env-file      | ENV_FILE          |                  | Environment file              |
 | --build-arg     | BUILD_ARGS        |                  | Build arguments (KEY=VALUE)    |
 
 ### Example Commands
