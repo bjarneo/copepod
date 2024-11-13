@@ -17,6 +17,7 @@ type Config struct {
 	Host          string            `json:"host"`
 	User          string            `json:"user"`
 	Image         string            `json:"image"`
+	Dockerfile    string            `json:"dockerfile"`
 	Tag           string            `json:"tag"`
 	Platform      string            `json:"platform"`
 	SSHKey        string            `json:"sshKey"`
@@ -56,6 +57,7 @@ Options:
   --host            Remote host to deploy to
   --user            SSH user for remote host
   --image           Docker image name (default: copepod_app)
+  --dockerfile      Path to the dockerfile (default: Dockerfile)
   --tag             Docker image tag (default: latest)
   --platform        Docker platform (default: linux/amd64)
   --ssh-key         Path to SSH key (default: "")
@@ -150,6 +152,7 @@ func LoadConfig() Config {
 	flag.StringVar(&config.Host, "host", getEnv("DEPLOY_HOST", ""), "Remote host to deploy to")
 	flag.StringVar(&config.User, "user", getEnv("DEPLOY_USER", ""), "SSH user for remote host")
 	flag.StringVar(&config.Image, "image", getEnv("DEPLOY_IMAGE", "app"), "Docker image name")
+	flag.StringVar(&config.Dockerfile, "dockerfile", "Dockerfile", "Path to the Dockerfile")
 	flag.StringVar(&config.Tag, "tag", getEnv("DEPLOY_TAG", "latest"), "Docker image tag")
 	flag.StringVar(&config.Platform, "platform", getEnv("DEPLOY_PLATFORM", "linux/amd64"), "Docker platform")
 	flag.StringVar(&config.SSHKey, "ssh-key", getEnv("SSH_KEY_PATH", ""), "Path to SSH key")
@@ -425,8 +428,8 @@ func Deploy(config *Config, logger *Logger) error {
 	}
 
 	// Check if Dockerfile exists
-	if _, err := os.Stat("Dockerfile"); os.IsNotExist(err) {
-		return fmt.Errorf("Dockerfile not found in current directory")
+	if _, err := os.Stat(config.Dockerfile); os.IsNotExist(err) {
+		return fmt.Errorf("%s not found", config.Dockerfile)
 	}
 
 	// Build Docker image with build arguments

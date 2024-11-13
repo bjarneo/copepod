@@ -80,6 +80,7 @@ go build -o copepod
 | --container-port| CONTAINER_PORT    | 3000             | Container port                    |
 | --host-port     | HOST_PORT         | 3000             | Host port                         |
 | --env-file      | ENV_FILE          |                  | Environment file                  |
+| --dockerfile    |                   | Dockerfile       | Dockerfile path                   |
 | --build-arg     |                   |                  | Build arguments (KEY=VALUE)       |
 | --rollback      |                   |                  | Rollback to the previous instance |
 
