@@ -207,7 +207,6 @@ This will trigger the GitHub Action workflow to:
 
 ## TODO
 
-- [ ] Add rollback functionality
 - [ ] Improve error handling
 - [ ] Add support for Docker Compose
 - [ ] Implement proper container health checks
