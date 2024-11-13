@@ -69,18 +69,19 @@ go build -o copepod
 ### Command Line Options
 
 | Option           | Environment Variable | Default          | Description                    |
-|-----------------|---------------------|------------------|--------------------------------|
-| --host          | DEPLOY_HOST       |                  | Remote host to deploy to       |
-| --user          | DEPLOY_USER       |                  | SSH user for remote host       |
-| --image         | DEPLOY_IMAGE      | copepod_app      | Docker image name              |
-| --tag           | DEPLOY_TAG        | latest           | Docker image tag              |
-| --platform      | DEPLOY_PLATFORM   | linux/amd64      | Docker platform               |
-| --ssh-key       | SSH_KEY_PATH      |                  | Path to SSH key               |
-| --container-name| CONTAINER_NAME    | copepod_app      | Name for the container         |
-| --container-port| CONTAINER_PORT    | 3000             | Container port                 |
-| --host-port     | HOST_PORT         | 3000             | Host port                      |
-| --env-file      | ENV_FILE          |                  | Environment file              |
-| --build-arg     | BUILD_ARGS        |                  | Build arguments (KEY=VALUE)    |
+|-----------------|---------------------|------------------|----------------------------------|
+| --host          | DEPLOY_HOST       |                  | Remote host to deploy to          |
+| --user          | DEPLOY_USER       |                  | SSH user for remote host          |
+| --image         | DEPLOY_IMAGE      | copepod_app      | Docker image name                 |
+| --tag           | DEPLOY_TAG        | latest           | Docker image tag                  |
+| --platform      | DEPLOY_PLATFORM   | linux/amd64      | Docker platform                   |
+| --ssh-key       | SSH_KEY_PATH      |                  | Path to SSH key                   |
+| --container-name| CONTAINER_NAME    | copepod_app      | Name for the container            |
+| --container-port| CONTAINER_PORT    | 3000             | Container port                    |
+| --host-port     | HOST_PORT         | 3000             | Host port                         |
+| --env-file      | ENV_FILE          |                  | Environment file                  |
+| --build-arg     |                   |                  | Build arguments (KEY=VALUE)       |
+| --rollback      |                   |                  | Rollback to the previous instance |
 
 ### Example Commands
 
@@ -100,6 +101,13 @@ Using environment file:
 
 ```bash
 ./copepod --env-file .env.production
+```
+
+Rollback:
+
+```bash
+# For rollback to work you need to deploy using different tags, and not override the same tag each deploy
+./codepod --host example.com --user deploy --container-name myapp --container-port 8080 --host-port 80 --rollback
 ```
 
 Using build arguments:
@@ -170,10 +178,9 @@ The tool includes error handling for common scenarios:
 ## Known Limitations
 
 1. Limited error recovery mechanisms
-2. No rollback functionality
-3. Basic container health checking
-4. No support for complex Docker network configurations
-5. No Docker Compose support
+2. Basic container health checking
+3. No support for complex Docker network configurations
+4. No Docker Compose support
 
 ## Contributing
 

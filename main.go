@@ -24,6 +24,7 @@ type Config struct {
 	ContainerPort string            `json:"containerPort"`
 	HostPort      string            `json:"hostPort"`
 	EnvFile       string            `json:"envFile"`
+	Rollback      bool              `json:"rollback"`
 	BuildArgs     map[string]string `json:"buildArgs"`
 }
 
@@ -63,6 +64,7 @@ Options:
   --host-port       Host port (default: 3000)
   --env-file        Environment file (default: "")
   --build-arg       Build arguments (can be specified multiple times, format: KEY=VALUE)
+  --rollback        Rollback to the previous version
   --help            Show this help message
 
 Environment Variables:
@@ -157,6 +159,7 @@ func LoadConfig() Config {
 	flag.StringVar(&config.EnvFile, "env-file", getEnv("ENV_FILE", ""), "Environment file")
 	flag.Var(&buildArgs, "build-arg", "Build argument in KEY=VALUE format (can be specified multiple times)")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
+	flag.BoolVar(&config.Rollback, "rollback", false, "Rollback to previous version")
 
 	// Custom usage message
 	flag.Usage = func() {
@@ -275,6 +278,126 @@ func CheckSSH(config *Config, logger *Logger) error {
 	return err
 }
 
+// Rollback performs a rollback to the previous version by inspecting the current container
+// TODO: fix this mess
+// Rollback performs a rollback to the previous version using docker images history
+func Rollback(config *Config, logger *Logger) error {
+	if err := logger.Info("Starting rollback process..."); err != nil {
+		return err
+	}
+
+	// Validate configuration
+	if err := config.ValidateConfig(); err != nil {
+		return err
+	}
+
+	// Check SSH connection
+	if err := CheckSSH(config, logger); err != nil {
+		return err
+	}
+
+	// Get current container image
+	getCurrentImageCmd := fmt.Sprintf("%s \"docker inspect --format='{{.Config.Image}}' %s\"",
+		getSSHCommand(config), config.ContainerName)
+	result, err := ExecuteCommand(logger, getCurrentImageCmd, "Getting current container information")
+	if err != nil {
+		return fmt.Errorf("failed to get current container information: %v", err)
+	}
+	currentImage := strings.TrimSpace(result.Stdout)
+
+	// Get image history sorted by creation time
+	// Format: repository, tag, image ID, created, size
+	getImagesCmd := fmt.Sprintf("%s \"docker images %s --format '{{.Repository}}:{{.Tag}}___{{.CreatedAt}}' | sort -k2 -r\"",
+		getSSHCommand(config), config.Image)
+	history, err := ExecuteCommand(logger, getImagesCmd, "Getting image history")
+	if err != nil {
+		return fmt.Errorf("failed to get image history: %v", err)
+	}
+
+	// Parse and sort images by creation time
+	images := strings.Split(strings.TrimSpace(history.Stdout), "\n")
+	if len(images) < 2 {
+		return fmt.Errorf("no previous version found to rollback to")
+	}
+
+	// Find current image and get the next one
+	var previousImage string
+	for i, img := range images {
+		imageName := strings.Split(img, "___")[0]
+		if imageName == currentImage && i+1 < len(images) {
+			previousImage = strings.Split(images[i+1], "___")[0]
+			break
+		}
+	}
+
+	if previousImage == "" {
+		return fmt.Errorf("could not find previous version to rollback to")
+	}
+
+	// Log the versions involved
+	if err := logger.Info(fmt.Sprintf("Found previous version: %s", previousImage)); err != nil {
+		return err
+	}
+
+	// Prepare rollback commands
+	envFileFlag := ""
+	if config.EnvFile != "" {
+		envFileFlag = fmt.Sprintf("--env-file ~/%s", config.EnvFile)
+	}
+
+	rollbackCommands := strings.Join([]string{
+		// Stop and rename current container (for backup)
+		fmt.Sprintf("docker stop %s", config.ContainerName),
+		fmt.Sprintf("docker rename %s %s_backup", config.ContainerName, config.ContainerName),
+
+		// Start container with previous version
+		fmt.Sprintf("docker run -d --name %s --restart unless-stopped -p %s:%s %s %s",
+			config.ContainerName, config.HostPort, config.ContainerPort,
+			envFileFlag, previousImage),
+	}, " && ")
+
+	// Execute rollback
+	rollbackCmd := fmt.Sprintf("%s \"%s\"", getSSHCommand(config), rollbackCommands)
+	if _, err := ExecuteCommand(logger, rollbackCmd, "Rolling back to previous version"); err != nil {
+		// If rollback fails, attempt to restore the backup
+		restoreCmd := fmt.Sprintf("%s \"docker stop %s || true && docker rm %s || true && docker rename %s_backup %s && docker start %s\"",
+			getSSHCommand(config), config.ContainerName, config.ContainerName,
+			config.ContainerName, config.ContainerName, config.ContainerName)
+		if _, restoreErr := ExecuteCommand(logger, restoreCmd, "Restoring previous version after failed rollback"); restoreErr != nil {
+			return fmt.Errorf("rollback failed and restore failed: %v (original error: %v)", restoreErr, err)
+		}
+		return fmt.Errorf("rollback failed, restored previous version: %v", err)
+	}
+
+	// Verify new container is running
+	verifyCmd := fmt.Sprintf("%s \"docker ps --filter name=%s --format '{{.Status}}'\"",
+		getSSHCommand(config), config.ContainerName)
+	result, err = ExecuteCommand(logger, verifyCmd, "Verifying rollback container status")
+	if err != nil {
+		return err
+	}
+
+	if !strings.Contains(result.Stdout, "Up") {
+		// If verification fails, attempt to restore the backup
+		restoreCmd := fmt.Sprintf("%s \"docker stop %s || true && docker rm %s || true && docker rename %s_backup %s && docker start %s\"",
+			getSSHCommand(config), config.ContainerName, config.ContainerName,
+			config.ContainerName, config.ContainerName, config.ContainerName)
+		if _, restoreErr := ExecuteCommand(logger, restoreCmd, "Restoring previous version after failed verification"); restoreErr != nil {
+			return fmt.Errorf("rollback verification failed and restore failed: %v", restoreErr)
+		}
+		return fmt.Errorf("rollback verification failed, restored previous version")
+	}
+
+	// Log the rollback details
+	logger.Info(fmt.Sprintf("Successfully rolled back from %s to %s", currentImage, previousImage))
+
+	// If everything is successful, remove the backup container
+	cleanupCmd := fmt.Sprintf("%s \"docker rm %s_backup\"", getSSHCommand(config), config.ContainerName)
+	_, _ = ExecuteCommand(logger, cleanupCmd, "Cleaning up backup container")
+
+	return logger.Info("Rollback completed successfully! 🔄")
+}
+
 // Deploy performs the main deployment process
 func Deploy(config *Config, logger *Logger) error {
 	// Log start of deployment
@@ -379,8 +502,16 @@ func main() {
 	defer logger.Close()
 
 	config := LoadConfig()
-	if err := Deploy(&config, logger); err != nil {
-		logger.Error("Deployment failed", err)
-		os.Exit(1)
+
+	if config.Rollback {
+		if err := Rollback(&config, logger); err != nil {
+			logger.Error("Rollback failed", err)
+			os.Exit(1)
+		}
+	} else {
+		if err := Deploy(&config, logger); err != nil {
+			logger.Error("Deployment failed", err)
+			os.Exit(1)
+		}
 	}
 }
