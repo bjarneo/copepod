@@ -2,7 +2,7 @@
 
 ⚠️ **EXPERIMENTAL PROTOTYPE** - This tool is currently in experimental stage and should be used with caution in production environments.
 
-A simple yet powerful Go-based CLI tool for automating Docker container deployments to remote servers. This tool handles the entire deployment process including building Docker images, transferring them to remote hosts, and managing container lifecycle.
+A simple yet powerful Go-based CLI tool for automating Docker container deployments to remote servers without the use of a registry. This tool handles the entire deployment process including building Docker images, transferring them to remote hosts, and managing container lifecycle.
 
 <https://github.com/user-attachments/assets/4034a7b3-67d6-4e9d-88ef-70bd6d1906d7>
 
