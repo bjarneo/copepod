@@ -1,7 +1,6 @@
 # Deployment
 
 ```mermaid
-```
 
 flowchart TD
     Start([Start Deployment]) --> ValidateConfig[Validate Configuration]
@@ -37,12 +36,10 @@ flowchart TD
     style Failure fill:#FFB6C1
 
 ```
-```
 
 # Rollback
 
 ```mermaid
-```
 
 flowchart TD
     Start([Start Rollback]) --> ValidateConfig[Validate Configuration]
@@ -78,5 +75,4 @@ flowchart TD
     style FailNoVersion fill:#FFB6C1
     style FailRestore fill:#FFB6C1
 
-```
 ```
