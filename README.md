@@ -150,6 +150,8 @@ Your project directory should look like this:
 7. Starts new container with specified configuration
 8. Verifies container is running properly
 
+Flow chart: FLOW.md
+
 ## Logging
 
 The tool maintains detailed logs in `deploy.log`, including:
