@@ -251,10 +251,20 @@ func ExecuteCommand(logger *Logger, command string, description string) (*Comman
 	return result, nil
 }
 
-// CheckDocker checks if Docker is installed and running
-func CheckDocker(logger *Logger) error {
-	_, err := ExecuteCommand(logger, "docker info", "Checking Docker installation")
-	return err
+// CheckDocker checks if Docker is installed and running locally and remotely
+func CheckDocker(config *Config, logger *Logger) error {
+	// Check local Docker
+	if _, err := ExecuteCommand(logger, "docker info", "Checking local Docker installation"); err != nil {
+		return fmt.Errorf("local Docker check failed: %v", err)
+	}
+
+	// Check remote Docker
+	remoteCmd := fmt.Sprintf("%s \"docker info\"", getSSHCommand(config))
+	if _, err := ExecuteCommand(logger, remoteCmd, "Checking remote Docker installation"); err != nil {
+		return fmt.Errorf("remote Docker check failed - please ensure Docker is installed on %s: %v", config.Host, err)
+	}
+
+	return nil
 }
 
 // getSSHKeyFlag returns the SSH key flag if SSHKey is set
@@ -419,7 +429,7 @@ func Deploy(config *Config, logger *Logger) error {
 	}
 
 	// Preliminary checks
-	if err := CheckDocker(logger); err != nil {
+	if err := CheckDocker(config, logger); err != nil {
 		return err
 	}
 
