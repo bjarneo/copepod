@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+// This will be defined on build time
+var version string
+
 // Config holds the deployment configuration
 type Config struct {
 	Host          string            `json:"host"`
@@ -144,6 +147,7 @@ func (i *arrayFlags) Set(value string) error {
 func LoadConfig() Config {
 	var config Config
 	var showHelp bool
+	var showVersion bool
 	var buildArgs arrayFlags
 
 	// Initialize BuildArgs map
@@ -164,6 +168,7 @@ func LoadConfig() Config {
 	flag.Var(&buildArgs, "build-arg", "Build argument in KEY=VALUE format (can be specified multiple times)")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 	flag.BoolVar(&config.Rollback, "rollback", false, "Rollback to previous version")
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
 
 	// Custom usage message
 	flag.Usage = func() {
@@ -176,6 +181,11 @@ func LoadConfig() Config {
 	// Show help if requested
 	if showHelp {
 		flag.Usage()
+		os.Exit(0)
+	}
+
+	if showVersion {
+		fmt.Printf("Copepod version %s\n", version)
 		os.Exit(0)
 	}
 
