@@ -343,7 +343,6 @@ func CheckSSH(config *Config, logger *Logger) error {
 
 // Rollback performs a rollback to the previous version by inspecting the current container
 // TODO: fix this mess
-// Rollback performs a rollback to the previous version using docker images history
 func Rollback(config *Config, logger *Logger) error {
 	if err := logger.Info("Starting rollback process..."); err != nil {
 		return err
