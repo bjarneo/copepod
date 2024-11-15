@@ -249,7 +249,6 @@ func ExecuteCommand(logger *Logger, command string, description string) (*Comman
 		return nil, fmt.Errorf("failed to start command: %v", err)
 	}
 
-	// Create buffers to store complete output
 	var stdoutBuilder, stderrBuilder strings.Builder
 
 	// Read stdout in real-time
@@ -259,7 +258,6 @@ func ExecuteCommand(logger *Logger, command string, description string) (*Comman
 			line := scanner.Text()
 			fmt.Println(line)
 			stdoutBuilder.WriteString(line + "\n")
-			logger.Info(line)
 		}
 	}()
 
@@ -268,13 +266,20 @@ func ExecuteCommand(logger *Logger, command string, description string) (*Comman
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
 			line := scanner.Text()
-			fmt.Println("ERROR:", line)
-			stderrBuilder.WriteString(line + "\n")
-			logger.Error(line, nil)
+			if strings.Contains(line, "error") || strings.Contains(line, "Error") {
+				fmt.Println("ERROR:", line)
+				stderrBuilder.WriteString(line + "\n")
+			} else {
+				fmt.Println(line)
+				stdoutBuilder.WriteString(line + "\n")
+			}
 		}
 	}()
 
 	if err := cmd.Wait(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() != 0 {
+			return nil, fmt.Errorf("command failed with exit code %d: %v", exitErr.ExitCode(), err)
+		}
 		return nil, fmt.Errorf("command failed: %v", err)
 	}
 
