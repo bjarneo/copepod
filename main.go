@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -223,7 +224,7 @@ func (c *Config) ValidateConfig() error {
 	return nil
 }
 
-// ExecuteCommand executes a shell command and logs the output
+// ExecuteCommand executes a shell command and streams the output
 func ExecuteCommand(logger *Logger, command string, description string) (*CommandResult, error) {
 	if err := logger.Info(fmt.Sprintf("%s...", description)); err != nil {
 		return nil, err
@@ -233,19 +234,53 @@ func ExecuteCommand(logger *Logger, command string, description string) (*Comman
 	}
 
 	cmd := exec.Command("sh", "-c", command)
-	output, err := cmd.CombinedOutput()
+
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed: %s", description), err)
-		return nil, err
+		return nil, fmt.Errorf("failed to create stdout pipe: %v", err)
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create stderr pipe: %v", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start command: %v", err)
+	}
+
+	// Create buffers to store complete output
+	var stdoutBuilder, stderrBuilder strings.Builder
+
+	// Read stdout in real-time
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line)
+			stdoutBuilder.WriteString(line + "\n")
+			logger.Info(line)
+		}
+	}()
+
+	// Read stderr in real-time
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println("ERROR:", line)
+			stderrBuilder.WriteString(line + "\n")
+			logger.Error(line, nil)
+		}
+	}()
+
+	if err := cmd.Wait(); err != nil {
+		return nil, fmt.Errorf("command failed: %v", err)
 	}
 
 	result := &CommandResult{
-		Stdout: string(output),
-		Stderr: "",
-	}
-
-	if len(output) > 0 {
-		logger.Info(fmt.Sprintf("Output: %s", string(output)))
+		Stdout: stdoutBuilder.String(),
+		Stderr: stderrBuilder.String(),
 	}
 
 	return result, nil
