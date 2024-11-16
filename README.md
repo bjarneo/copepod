@@ -83,6 +83,10 @@ go build -o copepod
 | --dockerfile    |                           | Dockerfile       | Dockerfile path                   |
 | --build-arg     | BUILD_ARGS                |                  | Build arguments (KEY=VALUE)       |
 | --rollback      |                           |                  | Rollback to the previous instance |
+| --network       | DOCKER_NETWORK            |                  | Docker network to connect to     |
+| --volume        |                           |                  | Volume mount (host:container)    |
+| --cpus          | DOCKER_CPUS               |                  | Number of CPUs                   |
+| --memory        | DOCKER_MEMORY             |                  | Memory limit                     |
 
 ### Example Commands
 
@@ -123,6 +127,17 @@ Using build arguments:
 # Using environment variable
 # Using git commit hash
 ./copepod --host example.com --user deploy --build-arg GIT_HASH=$(git rev-parse HEAD)
+```
+
+Advanced deployment with resource limits and volumes:
+
+```bash
+./copepod --host example.com --user deploy \
+  --network my-network \
+  --volume /host/data:/container/data \
+  --volume /host/config:/container/config \
+  --cpus 2 \
+  --memory 1g
 ```
 
 ## Directory Structure
