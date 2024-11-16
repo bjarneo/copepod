@@ -74,17 +74,17 @@ Options:
   --help            Show this help message
 
 Environment Variables:
-  DEPLOY_HOST      Remote host to deploy to
-  DEPLOY_USER      SSH user for remote host
-  DEPLOY_IMAGE     Docker image name
-  DEPLOY_TAG       Docker image tag
-  DEPLOY_PLATFORM  Docker platform
-  SSH_KEY_PATH     Path to SSH key
-  CONTAINER_NAME   Name for the container
-  CONTAINER_PORT   Container port
-  HOST_PORT        Host port
-  ENV_FILE         Environment file
-  BUILD_ARGS       Build arguments (comma-separated KEY=VALUE pairs)
+  HOST                     Remote host to deploy to
+  HOST_USER                SSH user for remote host
+  DOCKER_IMAGE_NAME        Docker image name
+  DOCKER_IMAGE_TAG         Docker image tag
+  HOST_PLATFORM           Docker platform
+  SSH_KEY_PATH            Path to SSH key
+  DOCKER_CONTAINER_NAME    Name for the container
+  DOCKER_CONTAINER_PORT    Container port
+  HOST_PORT               Host port
+  DOCKER_CONTAINER_ENV_FILE Environment file
+  BUILD_ARGS              Build arguments (comma-separated KEY=VALUE pairs)
 
 Examples:
   copepod --host example.com --user deploy
@@ -154,17 +154,17 @@ func LoadConfig() Config {
 	config.BuildArgs = make(map[string]string)
 
 	// Define command line flags
-	flag.StringVar(&config.Host, "host", getEnv("DEPLOY_HOST", ""), "Remote host to deploy to")
-	flag.StringVar(&config.User, "user", getEnv("DEPLOY_USER", ""), "SSH user for remote host")
-	flag.StringVar(&config.Image, "image", getEnv("DEPLOY_IMAGE", "app"), "Docker image name")
+	flag.StringVar(&config.Host, "host", getEnv("HOST", ""), "Remote host to deploy to")
+	flag.StringVar(&config.User, "user", getEnv("HOST_USER", ""), "SSH user for remote host")
+	flag.StringVar(&config.Image, "image", getEnv("DOCKER_IMAGE_NAME", "app"), "Docker image name")
 	flag.StringVar(&config.Dockerfile, "dockerfile", "Dockerfile", "Path to the Dockerfile")
-	flag.StringVar(&config.Tag, "tag", getEnv("DEPLOY_TAG", "latest"), "Docker image tag")
-	flag.StringVar(&config.Platform, "platform", getEnv("DEPLOY_PLATFORM", "linux/amd64"), "Docker platform")
+	flag.StringVar(&config.Tag, "tag", getEnv("DOCKER_IMAGE_TAG", "latest"), "Docker image tag")
+	flag.StringVar(&config.Platform, "platform", getEnv("HOST_PLATFORM", "linux/amd64"), "Docker platform")
 	flag.StringVar(&config.SSHKey, "ssh-key", getEnv("SSH_KEY_PATH", ""), "Path to SSH key")
-	flag.StringVar(&config.ContainerName, "container-name", getEnv("CONTAINER_NAME", "app"), "Name for the container")
-	flag.StringVar(&config.ContainerPort, "container-port", getEnv("CONTAINER_PORT", "3000"), "Container port")
+	flag.StringVar(&config.ContainerName, "container-name", getEnv("DOCKER_CONTAINER_NAME", "app"), "Name for the container")
+	flag.StringVar(&config.ContainerPort, "container-port", getEnv("DOCKER_CONTAINER_PORT", "3000"), "Container port")
 	flag.StringVar(&config.HostPort, "host-port", getEnv("HOST_PORT", "3000"), "Host port")
-	flag.StringVar(&config.EnvFile, "env-file", getEnv("ENV_FILE", ""), "Environment file")
+	flag.StringVar(&config.EnvFile, "env-file", getEnv("DOCKER_CONTAINER_ENV_FILE", ""), "Environment file")
 	flag.Var(&buildArgs, "build-arg", "Build argument in KEY=VALUE format (can be specified multiple times)")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 	flag.BoolVar(&config.Rollback, "rollback", false, "Rollback to previous version")
