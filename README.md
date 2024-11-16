@@ -68,21 +68,21 @@ go build -o copepod
 
 ### Command Line Options
 
-| Option           | Environment Variable | Default          | Description                    |
-|-----------------|---------------------|------------------|----------------------------------|
-| --host          | DEPLOY_HOST       |                  | Remote host to deploy to          |
-| --user          | DEPLOY_USER       |                  | SSH user for remote host          |
-| --image         | DEPLOY_IMAGE      | copepod_app      | Docker image name                 |
-| --tag           | DEPLOY_TAG        | latest           | Docker image tag                  |
-| --platform      | DEPLOY_PLATFORM   | linux/amd64      | Docker platform                   |
-| --ssh-key       | SSH_KEY_PATH      |                  | Path to SSH key                   |
-| --container-name| CONTAINER_NAME    | copepod_app      | Name for the container            |
-| --container-port| CONTAINER_PORT    | 3000             | Container port                    |
-| --host-port     | HOST_PORT         | 3000             | Host port                         |
-| --env-file      | ENV_FILE          |                  | Environment file                  |
-| --dockerfile    |                   | Dockerfile       | Dockerfile path                   |
-| --build-arg     |                   |                  | Build arguments (KEY=VALUE)       |
-| --rollback      |                   |                  | Rollback to the previous instance |
+| Option           | Environment Variable        | Default          | Description                    |
+|-----------------|----------------------------|------------------|----------------------------------|
+| --host          | HOST                      |                  | Remote host to deploy to          |
+| --user          | HOST_USER                 |                  | SSH user for remote host          |
+| --image         | DOCKER_IMAGE_NAME         | copepod_app      | Docker image name                 |
+| --tag           | DOCKER_IMAGE_TAG          | latest           | Docker image tag                  |
+| --platform      | HOST_PLATFORM             | linux/amd64      | Docker platform                   |
+| --ssh-key       | SSH_KEY_PATH              |                  | Path to SSH key                   |
+| --container-name| DOCKER_CONTAINER_NAME     | copepod_app      | Name for the container            |
+| --container-port| DOCKER_CONTAINER_PORT     | 3000             | Container port                    |
+| --host-port     | HOST_PORT                 | 3000             | Host port                         |
+| --env-file      | DOCKER_CONTAINER_ENV_FILE |                  | Environment file                  |
+| --dockerfile    |                           | Dockerfile       | Dockerfile path                   |
+| --build-arg     | BUILD_ARGS                |                  | Build arguments (KEY=VALUE)       |
+| --rollback      |                           |                  | Rollback to the previous instance |
 
 ### Example Commands
 
@@ -121,9 +121,6 @@ Using build arguments:
 ./copepod --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
 
 # Using environment variable
-export BUILD_ARGS="VERSION=1.0.0,ENV=prod"
-./copepod --host example.com --user deploy
-
 # Using git commit hash
 ./copepod --host example.com --user deploy --build-arg GIT_HASH=$(git rev-parse HEAD)
 ```
@@ -138,6 +135,88 @@ Your project directory should look like this:
 ├── your_code            # Your code
 └── .env.production      # Optional: Environment variables
 ```
+
+## Example Github workflow
+
+Deployment workflow:
+```yml
+name: Deploy Application
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to production
+        uses: bjarneo/workflows/action/copepod/action.yml@master
+        with:
+          host: remote_host.com
+          user: deploy_user
+          ssh_key: ~/.ssh/deploy_key
+          image: myapp
+          tag: ${{ steps.get_version.outputs.VERSION }}
+          container_name: myapp_prod
+          container_port: 3000
+          host_port: 80
+          env_file: .env.production
+          build_args: |
+            VERSION=${{ steps.get_version.outputs.VERSION }},
+            NODE_ENV=production,
+            BUILD_TIME=${{ github.event.repository.updated_at }}
+```
+
+Rollback workflow:
+```yml
+name: Deploy Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+  
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      # Example of rolling back if needed
+      # NOTE: You want to have a manual approval step in between to ensure you want to rollback
+      - name: Rollback production
+        uses: ./.github/action/copepod
+        with:
+          host: remote_host.com
+          user: deploy_user
+          ssh_key: ~/.ssh/deploy_key
+          image: myapp
+          container_name: myapp_prod
+          container_port: 3000
+          host_port: 80
+
+          # This has to be set to true for rollback to work
+          rollback: true
+```
+
 
 ## Deployment Process
 
