@@ -175,7 +175,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Deploy to production
-        uses: bjarneo/.github/actions/copepod/action.yml@main
+        uses: bjarneo/copepod/.github/actions/copepod/action.yml@main
         with:
           host: remote_host.com
           user: deploy_user
@@ -220,7 +220,7 @@ jobs:
       # Example of rolling back if needed
       # NOTE: You want to have a manual approval step in between to ensure you want to rollback
       - name: Rollback production
-        uses: bjarneo/.github/actions/copepod/action.yml@main
+        uses: bjarneo/copepod/.github/actions/copepod/action.yml@main
         with:
           host: remote_host.com
           user: deploy_user
