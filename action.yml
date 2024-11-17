@@ -28,6 +28,7 @@ inputs:
   ssh_key:
     description: 'SSH private key content'
     required: true
+    sensitive: true
   container_name:
     description: 'Name for the container'
     required: true
