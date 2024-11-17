@@ -47,6 +47,18 @@ inputs:
   rollback:
     description: 'Rollback to the previous version'
     required: false
+  network:
+    description: 'Docker network to connect to'
+    required: false
+  cpus:
+    description: 'Number of CPUs (e.g., "0.5" or "2")'
+    required: false
+  memory:
+    description: 'Memory limit (e.g., "512m" or "2g")'
+    required: false
+  volumes:
+    description: 'Volume mounts (comma-separated host:container pairs)'
+    required: false
 
 runs:
   using: "composite"
@@ -78,6 +90,19 @@ runs:
         fi
         echo "args=$BUILD_ARGS" >> $GITHUB_OUTPUT
 
+    - name: Prepare volume flags
+      id: volume_flags
+      shell: bash
+      run: |
+        VOLUME_FLAGS=""
+        if [ -n "${{ inputs.volumes }}" ]; then
+          IFS=',' read -ra VOLS <<< "${{ inputs.volumes }}"
+          for vol in "${VOLS[@]}"; do
+            VOLUME_FLAGS="$VOLUME_FLAGS --volume $vol"
+          done
+        fi
+        echo "flags=$VOLUME_FLAGS" >> $GITHUB_OUTPUT
+
     - name: Deploy with Copepod
       shell: bash
       env:
@@ -90,11 +115,15 @@ runs:
         DOCKER_CONTAINER_NAME: ${{ inputs.container_name }}
         DOCKER_CONTAINER_PORT: ${{ inputs.container_port }}
         DOCKER_CONTAINER_ENV_FILE: ${{ inputs.env_file }}
+        DOCKER_NETWORK: ${{ inputs.network }}
+        DOCKER_CPUS: ${{ inputs.cpus }}
+        DOCKER_MEMORY: ${{ inputs.memory }}
+        SSH_KEY_PATH: ~/.ssh/deploy_key
       run: |
         if [ "${{ inputs.rollback }}" = "true" ]; then
           ./copepod --rollback
         else
-          ./copepod ${{ steps.build_args.outputs.args }}
+          ./copepod ${{ steps.build_args.outputs.args }} ${{ steps.volume_flags.outputs.flags }}
         fi
 
     - name: Upload deployment logs
