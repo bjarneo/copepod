@@ -179,7 +179,7 @@ jobs:
         with:
           host: remote_host.com
           user: deploy_user
-          ssh_key: <PRIVATE_SSH_KEY>
+          ssh_key: ${{ secrets.PRIVATE_SSH_KEY }}
           image: myapp
           tag: ${{ steps.get_version.outputs.VERSION }}
           container_name: myapp_prod
@@ -224,7 +224,7 @@ jobs:
         with:
           host: remote_host.com
           user: deploy_user
-          ssh_key: ~/.ssh/deploy_key
+          ssh_key: ${{ secrets.PRIVATE_SSH_KEY }}
           image: myapp
           container_name: myapp_prod
           container_port: 3000
@@ -233,6 +233,30 @@ jobs:
           # This has to be set to true for rollback to work
           rollback: true
 ```
+
+## GitHub Action Inputs
+
+When using Copepod as a GitHub Action, the following inputs are available:
+
+| Input            | Required | Default        | Description                                     |
+|------------------|----------|----------------|-------------------------------------------------|
+| host             | Yes      |                | Remote host to deploy to                        |
+| user             | Yes      |                | SSH user for remote host                        |
+| ssh_key          | Yes      |                | SSH private key for authentication              |
+| image            | No       | copepod_app    | Docker image name                               |
+| tag              | No       | latest         | Docker image tag                                |
+| platform         | No       | linux/amd64    | Docker platform                                 |
+| container_name   | No       | copepod_app    | Name for the container                          |
+| container_port   | No       | 3000           | Container port                                  |
+| host_port        | No       | 3000           | Host port                                       |
+| env_file         | No       |                | Path to environment file                        |
+| dockerfile       | No       | Dockerfile     | Path to Dockerfile                              |
+| build_args       | No       |                | Build arguments (comma-separated KEY=VALUE pairs)|
+| rollback         | No       | false          | Whether to perform a rollback                   |
+| network          | No       |                | Docker network to connect to                    |
+| volume           | No       |                | Volume mount (host:container)                   |
+| cpus             | No       |                | Number of CPUs                                  |
+| memory           | No       |                | Memory limit                                    |
 
 ## Deployment Process
 
