@@ -154,6 +154,7 @@ Your project directory should look like this:
 ## Example Github workflow
 
 Deployment workflow:
+
 ```yml
 name: Deploy Application
 
@@ -174,7 +175,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Deploy to production
-        uses: bjarneo/workflows/action/copepod.yml@main
+        uses: bjarneo/.github/actions/copepod/action.yml@main
         with:
           host: remote_host.com
           user: deploy_user
@@ -192,6 +193,7 @@ jobs:
 ```
 
 Rollback workflow:
+
 ```yml
 name: Deploy Application
 
@@ -218,7 +220,7 @@ jobs:
       # Example of rolling back if needed
       # NOTE: You want to have a manual approval step in between to ensure you want to rollback
       - name: Rollback production
-        uses: bjarneo/workflows/action/copepod.yml@main
+        uses: bjarneo/.github/actions/copepod/action.yml@main
         with:
           host: remote_host.com
           user: deploy_user
@@ -231,7 +233,6 @@ jobs:
           # This has to be set to true for rollback to work
           rollback: true
 ```
-
 
 ## Deployment Process
 
