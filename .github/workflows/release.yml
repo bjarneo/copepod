@@ -86,6 +86,6 @@ jobs:
           # Create release using gh cli
           gh release create "$VERSION" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "Copepod $VERSION" \
+            --title "pipe $VERSION" \
             --notes-file release_notes.md \
             pipe-*
