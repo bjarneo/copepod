@@ -4,7 +4,7 @@ A simple yet powerful Go-based CLI tool for automating Docker container deployme
 ## Why the name pipe?
 Because the docker image is piped through ssh and loaded to the docker instance
 
-<https://github.com/user-attachments/assets/4034a7b3-67d6-4e9d-88ef-70bd6d1906d7>
+https://github.com/user-attachments/assets/68111156-4445-43c1-9d63-071b2680abc3
 
 ## Prerequisites
 
