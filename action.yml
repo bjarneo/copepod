@@ -1,6 +1,6 @@
-name: Deploy with Copepod
+name: Deploy with pipe
 
-description: 'Deploy applications using Copepod'
+description: 'Deploy applications using pipe'
 
 inputs:
   host:
@@ -71,7 +71,7 @@ runs:
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H ${{ inputs.host }} >> ~/.ssh/known_hosts
 
-    - name: Download Copepod
+    - name: Download pipe
       shell: bash
       run: |
         curl -L -o pipe "https://github.com/bjarneo/pipe/releases/latest/download/pipe-linux-amd64"
@@ -103,7 +103,7 @@ runs:
         fi
         echo "flags=$VOLUME_FLAGS" >> $GITHUB_OUTPUT
 
-    - name: Deploy with Copepod
+    - name: Deploy with pipe
       shell: bash
       env:
         HOST: ${{ inputs.host }}

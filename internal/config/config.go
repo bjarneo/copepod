@@ -88,7 +88,7 @@ func Load() Config {
 	}
 
 	if showVersion {
-		fmt.Printf("Copepod version %s\n", version)
+		fmt.Printf("pipe version %s\n", version)
 		os.Exit(0)
 	}
 

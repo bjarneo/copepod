@@ -9,7 +9,7 @@ RUN echo '<!DOCTYPE html>\
 </head>\
 <body>\
     <div class="container">\
-        <h1>Welcome to Copepod3!</h1>\
+        <h1>Welcome to pipe!</h1>\
         <p>If you see this page, the nginx web server is successfully installed and working.</p>\
         <p>This page was created from within the Dockerfile.</p>\
     </div>\
