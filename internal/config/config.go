@@ -147,7 +147,7 @@ const helpText = `
 Docker Deployment Tool
 
 Usage:
-  copepod [options]
+  pipe [options]
 
 Options:
   --host            Remote host to deploy to
@@ -188,9 +188,9 @@ Environment Variables:
 
 
 Examples:
-  copepod --host example.com --user deploy
-  copepod --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
-  copepod --env-file .env.production --build-arg GIT_HASH=$(git rev-parse HEAD)
-  copepod --host example.com --user deploy --cpus "0.5" --memory "512m"
-  copepod --rollback # Rollback to the previous version
+  pipe --host example.com --user deploy
+  pipe --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
+  pipe --env-file .env.production --build-arg GIT_HASH=$(git rev-parse HEAD)
+  pipe --host example.com --user deploy --cpus "0.5" --memory "512m"
+  pipe --rollback # Rollback to the previous version
 ` 

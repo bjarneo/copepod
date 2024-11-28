@@ -5,7 +5,7 @@ FROM nginx:alpine
 RUN echo '<!DOCTYPE html>\
 <html>\
 <head>\
-    <title>Welcome to copepod3</title>\
+    <title>Welcome to pipe3</title>\
 </head>\
 <body>\
     <div class="container">\

@@ -43,18 +43,18 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          go build -v -ldflags="-X main.version=${VERSION}" -o copepod-${{ matrix.os }}-${{ matrix.arch }}
-          chmod +x copepod-${{ matrix.os }}-${{ matrix.arch }}
+          go build -v -ldflags="-X main.version=${VERSION}" -o pipe-${{ matrix.os }}-${{ matrix.arch }}
+          chmod +x pipe-${{ matrix.os }}-${{ matrix.arch }}
       - name: Generate SHA-256
         run: |
-          sha256sum copepod-${{ matrix.os }}-${{ matrix.arch }} > copepod-${{ matrix.os }}-${{ matrix.arch }}.sha256
+          sha256sum pipe-${{ matrix.os }}-${{ matrix.arch }} > pipe-${{ matrix.os }}-${{ matrix.arch }}.sha256
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: binaries-${{ matrix.os }}-${{ matrix.arch }}
           path: |
-            copepod-${{ matrix.os }}-${{ matrix.arch }}
-            copepod-${{ matrix.os }}-${{ matrix.arch }}.sha256
+            pipe-${{ matrix.os }}-${{ matrix.arch }}
+            pipe-${{ matrix.os }}-${{ matrix.arch }}.sha256
           retention-days: 1
   release:
     name: Create Release
@@ -88,4 +88,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "Copepod $VERSION" \
             --notes-file release_notes.md \
-            copepod-*
+            pipe-*

@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/bjarneo/copepod/internal/config"
-	"github.com/bjarneo/copepod/internal/deploy"
-	"github.com/bjarneo/copepod/internal/logger"
+	"github.com/bjarneo/pipe/internal/config"
+	"github.com/bjarneo/pipe/internal/deploy"
+	"github.com/bjarneo/pipe/internal/logger"
 )
 
 func main() {

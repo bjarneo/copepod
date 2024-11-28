@@ -16,34 +16,34 @@ A simple yet powerful Go-based CLI tool for automating Docker container deployme
 
 ### Pre-built Binaries
 
-Download the latest pre-built binary from the [releases page](https://github.com/bjarneo/copepod/releases).
+Download the latest pre-built binary from the [releases page](https://github.com/bjarneo/pipe/releases).
 
 Available binaries:
 
-- Linux (AMD64): `copepod-linux-amd64`
-- Linux (ARM64): `copepod-linux-arm64`
-- macOS (Intel): `copepod-darwin-amd64`
-- macOS (Apple Silicon): `copepod-darwin-arm64`
+- Linux (AMD64): `pipe-linux-amd64`
+- Linux (ARM64): `pipe-linux-arm64`
+- macOS (Intel): `pipe-darwin-amd64`
+- macOS (Apple Silicon): `pipe-darwin-arm64`
 
 After downloading:
 
 1. Verify the checksum (SHA-256):
 
 ```bash
-sha256sum -c copepod-<os>-<arch>.sha256
+sha256sum -c pipe-<os>-<arch>.sha256
 ```
 
 2. Make the binary executable:
 
 ```bash
-chmod +x copepod-<os>-<arch>
+chmod +x pipe-<os>-<arch>
 ```
 
 3. Optionally, move to your PATH:
 
 ```bash
 # Example for Linux/macOS
-sudo mv copepod-<os>-<arch> /usr/local/bin/copepod
+sudo mv pipe-<os>-<arch> /usr/local/bin/pipe
 ```
 
 ### Building from Source
@@ -56,14 +56,14 @@ Requirements:
 
 ```bash
 git clone <repository-url>
-cd copepod
-go build -o copepod
+cd pipe
+go build -o pipe
 ```
 
 ## Usage
 
 ```bash
-./copepod [options]
+./pipe [options]
 ```
 
 ### Command Line Options
@@ -72,11 +72,11 @@ go build -o copepod
 |-----------------|----------------------------|------------------|----------------------------------|
 | --host          | HOST                      |                  | Remote host to deploy to          |
 | --user          | HOST_USER                 |                  | SSH user for remote host          |
-| --image         | DOCKER_IMAGE_NAME         | copepod_app      | Docker image name                 |
+| --image         | DOCKER_IMAGE_NAME         | pipe_app      | Docker image name                 |
 | --tag           | DOCKER_IMAGE_TAG          | latest           | Docker image tag                  |
 | --platform      | HOST_PLATFORM             | linux/amd64      | Docker platform                   |
 | --ssh-key       | SSH_KEY_PATH              |                  | Path to SSH key                   |
-| --container-name| DOCKER_CONTAINER_NAME     | copepod_app      | Name for the container            |
+| --container-name| DOCKER_CONTAINER_NAME     | pipe_app      | Name for the container            |
 | --container-port| DOCKER_CONTAINER_PORT     | 3000             | Container port                    |
 | --host-port     | HOST_PORT                 | 3000             | Host port                         |
 | --env-file      | DOCKER_CONTAINER_ENV_FILE |                  | Environment file                  |
@@ -93,19 +93,19 @@ go build -o copepod
 Basic deployment:
 
 ```bash
-./copepod --host example.com --user deploy
+./pipe --host example.com --user deploy
 ```
 
 Deployment with custom ports:
 
 ```bash
-./copepod --host example.com --user deploy --container-name myapp --container-port 8080 --host-port 80
+./pipe --host example.com --user deploy --container-name myapp --container-port 8080 --host-port 80
 ```
 
 Using environment file:
 
 ```bash
-./copepod --env-file .env.production
+./pipe --env-file .env.production
 ```
 
 Rollback:
@@ -119,20 +119,20 @@ Using build arguments:
 
 ```bash
 # Single build argument
-./copepod --host example.com --user deploy --build-arg VERSION=1.0.0
+./pipe --host example.com --user deploy --build-arg VERSION=1.0.0
 
 # Multiple build arguments
-./copepod --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
+./pipe --host example.com --user deploy --build-arg VERSION=1.0.0 --build-arg ENV=prod
 
 # Using environment variable
 # Using git commit hash
-./copepod --host example.com --user deploy --build-arg GIT_HASH=$(git rev-parse HEAD)
+./pipe --host example.com --user deploy --build-arg GIT_HASH=$(git rev-parse HEAD)
 ```
 
 Advanced deployment with resource limits and volumes:
 
 ```bash
-./copepod --host example.com --user deploy \
+./pipe --host example.com --user deploy \
   --network my-network \
   --volume /host/data:/container/data \
   --volume /host/config:/container/config \
@@ -175,7 +175,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: Deploy to production
-        uses: bjarneo/copepod@main
+        uses: bjarneo/pipe@main
         with:
           host: remote_host.com
           user: deploy_user
@@ -220,7 +220,7 @@ jobs:
       # Example of rolling back if needed
       # NOTE: You want to have a manual approval step in between to ensure you want to rollback
       - name: Rollback production
-        uses: bjarneo/copepod@main
+        uses: bjarneo/pipe@main
         with:
           host: remote_host.com
           user: deploy_user
@@ -243,10 +243,10 @@ When using Copepod as a GitHub Action, the following inputs are available:
 | host             | Yes      |                | Remote host to deploy to                        |
 | user             | Yes      |                | SSH user for remote host                        |
 | ssh_key          | Yes      |                | SSH private key for authentication              |
-| image            | No       | copepod_app    | Docker image name                               |
+| image            | No       | pipe_app    | Docker image name                               |
 | tag              | No       | latest         | Docker image tag                                |
 | platform         | No       | linux/amd64    | Docker platform                                 |
-| container_name   | No       | copepod_app    | Name for the container                          |
+| container_name   | No       | pipe_app    | Name for the container                          |
 | container_port   | No       | 3000           | Container port                                  |
 | host_port        | No       | 3000           | Host port                                       |
 | env_file         | No       |                | Path to environment file                        |

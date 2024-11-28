@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bjarneo/copepod/internal/config"
-	"github.com/bjarneo/copepod/internal/logger"
-	"github.com/bjarneo/copepod/internal/ssh"
+	"github.com/bjarneo/pipe/internal/config"
+	"github.com/bjarneo/pipe/internal/logger"
+	"github.com/bjarneo/pipe/internal/ssh"
 )
 
 // Check checks if Docker is installed and running locally and remotely

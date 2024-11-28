@@ -74,8 +74,8 @@ runs:
     - name: Download Copepod
       shell: bash
       run: |
-        curl -L -o copepod "https://github.com/bjarneo/copepod/releases/latest/download/copepod-linux-amd64"
-        chmod +x copepod
+        curl -L -o pipe "https://github.com/bjarneo/pipe/releases/latest/download/pipe-linux-amd64"
+        chmod +x pipe
 
     - name: Prepare build args
       id: build_args
@@ -121,9 +121,9 @@ runs:
         SSH_KEY_PATH: ~/.ssh/deploy_key
       run: |
         if [ "${{ inputs.rollback }}" = "true" ]; then
-          ./copepod --rollback
+          ./pipe --rollback
         else
-          ./copepod ${{ steps.build_args.outputs.args }} ${{ steps.volume_flags.outputs.flags }}
+          ./pipe ${{ steps.build_args.outputs.args }} ${{ steps.volume_flags.outputs.flags }}
         fi
 
     - name: Upload deployment logs
