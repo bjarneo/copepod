@@ -11,6 +11,7 @@ https://github.com/user-attachments/assets/68111156-4445-43c1-9d63-071b2680abc3
 - Docker installed locally and on the remote host
 - SSH access to the remote host
 - SSH key-based authentication
+- Go 1.21 or higher (due to usage of slices.Reverse)
 
 ## Installation
 
@@ -52,7 +53,7 @@ Alternatively, you can build from source:
 
 Requirements:
 
-- Go 1.x or higher
+- Go 1.21 or higher
 
 ```bash
 git clone <repository-url>
@@ -268,6 +269,7 @@ When using Pipe as a GitHub Action, the following inputs are available:
 6. Stops and removes existing container
 7. Starts new container with specified configuration
 8. Verifies container is running properly
+9. Automatically cleans up old releases (keeps only the latest 5 images)
 
 Flow chart: FLOW.md
 

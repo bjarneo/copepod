@@ -27,7 +27,8 @@ flowchart TD
         RemoveContainer --> StartContainer[Start New Container]
         StartContainer --> VerifyContainer{Verify Container Status}
         
-        VerifyContainer --> |"Up"| Success([Deployment Success])
+        VerifyContainer --> |"Up"| CleanupImages[Cleanup Old Images]
+        CleanupImages --> |"Keep Latest 5"| Success([Deployment Success])
         VerifyContainer --> |"Down"| Failure([Deployment Failure])
     end
     
