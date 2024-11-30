@@ -43,7 +43,7 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          go build -v -ldflags="-X main.version=${VERSION}" -o pipe-${{ matrix.os }}-${{ matrix.arch }}
+          go build -v -ldflags="-X github.com/bjarneo/pipe/internal/config.version=${VERSION}" -o pipe-${{ matrix.os }}-${{ matrix.arch }}
           chmod +x pipe-${{ matrix.os }}-${{ matrix.arch }}
       - name: Generate SHA-256
         run: |
