@@ -3,6 +3,7 @@ package docker
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/bjarneo/pipe/internal/config"
@@ -98,7 +99,50 @@ func Deploy(cfg *config.Config, log *logger.Logger) error {
 		return err
 	}
 
+	// Clean up old releases
+	if err := cleanupOldReleases(cfg, log); err != nil {
+		log.Info(fmt.Sprintf("failed to cleanup old releases: %v", err))
+	}
+
 	return verifyContainer(cfg, log)
+}
+
+// cleanupOldReleases ensures only the last 5 releases are kept
+func cleanupOldReleases(cfg *config.Config, log *logger.Logger) error {
+	// Get all images for the current application
+	listCmd := fmt.Sprintf("%s \"docker images '%s' --format '{{.Tag}}'\"",
+		ssh.GetCommand(cfg), cfg.Image)
+
+	result, err := ssh.ExecuteCommand(log, listCmd, "Listing existing releases")
+	if err != nil {
+		return err
+	}
+
+	// Split tags into slice and reverse the order
+	tags := strings.Split(strings.TrimSpace(result.Stdout), "\n")
+
+	if len(tags) <= 5 {
+		return nil // No cleanup needed
+	}
+
+	slices.Reverse(tags)
+
+	// Remove all but the latest 5 tags
+	for _, tag := range tags[5:] {
+		if tag == "" {
+			continue
+		}
+		removeCmd := fmt.Sprintf("%s \"docker rmi %s:%s\"",
+			ssh.GetCommand(cfg), cfg.Image, tag)
+
+		if _, err := ssh.ExecuteCommand(log, removeCmd,
+			fmt.Sprintf("Removing old release %s", tag)); err != nil {
+			log.Info(fmt.Sprintf("Failed to remove old release %s: %v", tag, err))
+			// Continue with other deletions even if one fails
+		}
+	}
+
+	return nil
 }
 
 // verifyContainer verifies that the container is running
@@ -115,4 +159,5 @@ func verifyContainer(cfg *config.Config, log *logger.Logger) error {
 	}
 
 	return nil
-} 
+}
+
