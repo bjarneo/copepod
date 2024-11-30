@@ -15,6 +15,14 @@ https://github.com/user-attachments/assets/68111156-4445-43c1-9d63-071b2680abc3
 
 ## Installation
 
+### Quick Install (curl)
+
+You can quickly install pipe using curl:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bjarneo/pipe/main/install.sh | sh
+```
+
 ### Pre-built Binaries
 
 Download the latest pre-built binary from the [releases page](https://github.com/bjarneo/pipe/releases).
